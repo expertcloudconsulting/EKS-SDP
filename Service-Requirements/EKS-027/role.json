@@ -1,0 +1,30 @@
+{
+    "Version":
+"2012-10-17",
+    "Statement":
+[
+        {
+            "Sid":
+"",
+           
+"Effect": "Allow",
+           
+"Principal": {
+               
+"Federated":
+"arn:aws:iam::<redacted>"
+            },
+           
+"Action": "sts:AssumeRoleWithWebIdentity",
+           
+"Condition": {
+               
+"StringEquals": {
+                   
+"<redacted>sub":
+"system:serviceaccount:karpenter:karpenter"
+                }
+            }
+        }
+    ]
+}
