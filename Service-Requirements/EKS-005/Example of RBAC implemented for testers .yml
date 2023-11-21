@@ -1,0 +1,87 @@
+Example of RBAC implemented for testers group:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tester-clusterrolebinding
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: tester-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tester-clusterrole
+rules:
+- apiGroups: [""]
+  resources: [""]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""] 
+  resources: ["pods"]
+  verbs: ["get", "watch", "list", "create", "patch", "update", "delete", "deletecollection"] 
+Example for RBAC implemeted for user:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: microservices
+subjects:
+- kind: User
+  name: jane 
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role 
+  name: pod-reader 
+  apiGroup: rbac.authorization.k8s.io
+
+
+Example of persistentVolumes and PersitentVolumeClaims:
+---
+apiVersion: apps/v1
+kind: StatefulSet
+.
+.
+.
+      volumes:
+      - name: elasticsearch-config
+        configMap:
+          name: elasticsearch-config
+          items:
+          - key: elasticsearch.yml
+            path: elasticsearch.yml
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "efs-sc" 
+      resources:
+        requests:
+          storage: 10Gi  # ignored by efs
+
+Example of usage of resourceQuotas:
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
