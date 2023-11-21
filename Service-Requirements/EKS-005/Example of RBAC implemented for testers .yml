@@ -55,6 +55,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 .
 .
+volumeMounts:
+- name: data
+          mountPath: /usr/share/elasticsearch/data
 .
       volumes:
       - name: elasticsearch-config
