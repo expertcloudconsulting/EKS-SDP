@@ -1,0 +1,30 @@
+provider "aws" {
+  region = "us-west-2"  
+}
+
+module "eks_cluster" {
+  source  = "terraform-aws-modules/eks/aws" #module developed by org would be used.
+  version = "X.Y.Z" 
+
+  cluster_name    = "my-eks-cluster"
+  subnets         = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"] 
+  vpc_id          = "vpc-xxxxxxxxxxxxxxxxx"  
+  cluster_version = "1.21"
+
+  node_groups = {
+    eks_nodes = {
+      desired_capacity = 2
+      max_capacity     = 3
+      min_capacity     = 1
+
+      key_name = "your-key-pair-name"  
+
+      instance_type = "t2.micro"  
+    }
+  }
+}
+
+output "kubeconfig" {
+  value       = module.eks_cluster.kubeconfig
+  description = "Kubeconfig for connecting to the EKS cluster"
+}
