@@ -1,0 +1,55 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"traefik.ingress.kubernetes.io/router.entrypoints":"web","traefik.ingress.kubernetes.io/router.middlewares":"traefik-basic-auth@kubernetescrd"},"name":"whoami","namespace":"traefik"},"spec":{"rules":[{"http":{"paths":[{"backend":{"service":{"name":"whoami","port":{"number":80}}},"path":"/whoami","pathType":"Prefix"},{"backend":{"service":{"name":"nginx","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-nginx@kubernetescrd # strip path prefix middleware
+  creationTimestamp: "2023-01-02T14:59:34Z"
+  generation: 5
+  name: whoami
+  namespace: traefik
+  resourceVersion: "12990700"
+  uid: 9c39b8f5-08dd-41e2-aead-eef8761d0e4a
+spec:
+  ingressClassName: traefik
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: whoami
+            port:
+              number: 80
+        path: /whoami
+        pathType: Prefix
+      - backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+        path: /change
+        pathType: Prefix
+status:
+  loadBalancer: {}
+---
+# Please edit the object below. Lines beginning with a '#' will be ignored
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"traefik.containo.us/v1alpha1","kind":"Middleware","metadata":{"annotations":{},"name":"kibana","namespace":"traefik"},"spec":{"stripPrefix":{"forceSlash":false,"prefixes":["/delta","/nginx","/change"]}}}
+  creationTimestamp: "2023-01-16T12:18:10Z"
+  generation: 2
+  name: nginx
+  namespace: traefik
+  resourceVersion: "6998701"
+  uid: 5cc813da-75b9-4127-b6e0-e169c3c28580
+spec:
+  stripPrefix:
+    forceSlash: false
+    prefixes:
+    - /change
