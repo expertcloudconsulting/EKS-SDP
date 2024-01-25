@@ -47,13 +47,49 @@ roleRef:
   kind: Role 
   name: pod-reader 
   apiGroup: rbac.authorization.k8s.io
-
-
-Example of persistentVolumes and PersitentVolumeClaims:
+#Example of persistentVolumes and PersitentVolumeClaims:
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: task-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: block-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Block
+  resources:
+    requests:
+      storage: 10Gi
+--- 
+#Example of use of limits, pv and pvc 
 apiVersion: apps/v1
 kind: StatefulSet
 .
+  containers:
+  - name: app
+    image: images.my-company.example/elasticsearch
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
 .
 volumeMounts:
 - name: data
@@ -75,13 +111,13 @@ volumeMounts:
       resources:
         requests:
           storage: 10Gi  # ignored by efs
-
-Example of usage of resourceQuotas:
+#Example of usage of resourceQuotas:
 ---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: compute-resources
+  namesapce: kibana
 spec:
   hard:
     requests.cpu: "1"

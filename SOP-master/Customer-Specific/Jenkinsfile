@@ -1,0 +1,75 @@
+#!groovy
+
+node('master') {
+    timestamps {
+        try {
+            notifyBuild('STARTED')
+            step([$class: 'WsCleanup'])
+            stage('Checkout code') {
+                checkout scm
+            }
+
+            //global variable
+            def SERVICE_NAME = sh(returnStdout: true, script: "git config --get remote.origin.url | cut -f 5 -d '/' | sed 's/.git//g'").trim()
+
+            stage('Docker Build & Push') {
+                docker.withRegistry('https://registry.hub.docker.com', 'Docker_creds') {
+                def customImage = docker.build("fcbravvox/${SERVICE_NAME}", "./workers/email")
+                /* Push the image to the custom Registry */
+                customImage.push("${env.BUILD_ID}")
+                customImage.push('latest')
+                }
+            }
+
+            stage('Deployment') {
+                def k8sImage = docker.image('$REPO/kubectl-git')
+                k8sImage.inside("-u 0:0 --entrypoint=''") {
+                    //adding kubeconfig file to docker container for k8 deployment
+                    withCredentials([file(credentialsId: '5f0c1364-731c-4d1c-a6dd-096bc1acb45c', variable: 'KUBECONFIG')]) {
+                        sh 'mkdir .kube && cat $KUBECONFIG > .kube/config'
+                        sh "kubectl -n app create configmap ${SERVICE_NAME}-dev-config --from-file=workers/email/config/dev.yaml -o yaml --dry-run=client | kubectl apply -f -"
+                        sh 'chmod +x K8s_Objects/deploy.sh'
+                        sh "K8s_Objects/deploy.sh ${env.BUILD_ID} ${SERVICE_NAME}"
+                        sh "echo 'deployment completed successfully'"
+                        }
+                    }
+                }
+            }
+        catch (CaughtErr) {
+            currentBuild.result = "FAILED"
+            println("Caught exception: " + CaughtErr)
+            // error = catchException exception: CaughtErr
+            } 
+        finally {
+            println("CurrentBuild result: " + currentBuild.result)
+            // Success or failure, always send notifications
+            notifyBuild(currentBuild.result)
+            }
+        }
+    }
+
+def notifyBuild(String buildStatus = 'STARTED') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESS'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (${env.BUILD_URL})"
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') {
+    color = 'YELLOW'
+    colorCode = '#FFFF00'
+  } else if (buildStatus == 'SUCCESS') {
+    color = 'GREEN'
+    colorCode = '#00FF00'
+  } else {
+    color = 'RED'
+    colorCode = '#FF0000'
+  }
+
+  // Send notifications
+  slackSend (color: colorCode, message: summary)
+}

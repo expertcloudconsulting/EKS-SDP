@@ -1,10 +1,10 @@
 Summary:
-[PASS] 1 Worker Node Security Configuration
+[PASS] 1 Master Node Security Configuration
 [PASS] 2 API Server
 [PASS] 3 Controller Manager
 [PASS] 4 Scheduler
 [PASS] 5 etcd
-[INFO] 6 Policies
+[PASS] 6 Policies
 [PASS] 7 Docker
 [PASS] 8 Node
 [PASS] 9 Networking

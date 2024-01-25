@@ -1,0 +1,81 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "cloudwatch1",
+			"Effect": "Allow",
+			"Action": [
+				"cloudtrail:GetTrailStatus",
+				"cloudwatch:List*",
+				"cloudwatch:Get*",
+				"cloudwatch:Describe*"
+			],
+			"Resource": [
+				"arn:aws:cloudwatch::<account-id>:dashboard/*",
+				"arn:aws:cloudwatch:*:<account-id>:alarm:*",
+				"arn:aws:cloudtrail:*:<account-id>:trail/*"
+			]
+		},
+		{
+			"Sid": "cloudwatch2",
+			"Effect": "Allow",
+			"Action": [
+				"cloudwatch:DescribeInsightRules",
+				"cloudwatch:GetMetricStatistics",
+				"cloudtrail:DescribeTrails",
+				"route53:GetGeoLocation",
+				"cloudwatch:ListMetrics",
+				"cloudwatch:GetMetricWidgetImage",
+				"cloudwatch:ListMetricStreams",
+				"cloudwatch:DescribeAlarmsForMetric",
+				"cloudwatch:ListDashboards",
+				"cloudwatch:GetMetricData",
+				"cloudwatch:DescribeAnomalyDetectors"
+			],
+			"Resource": "arn:aws:cloudwatch::<account-id>:dashboard/*"
+		},
+        {
+			"Sid": "ssm",
+			"Effect": "Allow",
+			"Action": [
+				"ssm:ResumeSession",
+				"ssm:DescribeDocument",
+				"ssm:TerminateSession",
+				"ssm:DescribeMaintenanceWindowExecutions",
+				"ssm:StartSession",
+				"ssm:GetMaintenanceWindowTask",
+				"ssm:DescribeMaintenanceWindowExecutionTasks",
+				"ssm:GetDocument"
+			],
+			"Resource": [
+				"arn:aws:ssm:*:<account-id>:session/*",
+				"arn:aws:ssm:*:<account-id>:document/*",
+				"arn:aws:ssm:*:<account-id>:maintenancewindow/*"
+			]
+		},
+		{
+			"Sid": "route53",
+			"Effect": "Allow",
+			"Action": [
+				"route53:Get*",
+				"route53:List*"
+			],
+			"Resource": [
+				"arn:aws:route53:::hostedzone/*",
+				"arn:aws:route53:::healthcheck/*",
+				"arn:aws:route53:::trafficpolicy/*",
+				"arn:aws:route53:::queryloggingconfig/*"
+			]
+		},
+		{
+			"Sid": "eks",
+			"Effect": "Allow",
+			"Action": "eks:*",
+			"Resource": [
+				"arn:aws:eks:ap-south-1:<account-id>:cluster/Basik-*",
+				"arn:aws:eks:*:<account-id>:nodegroup/*/*/*",
+				"arn:aws:eks:*:<account-id>:identityproviderconfig/*/*/*/*"
+			]
+		}
+	]
+}
