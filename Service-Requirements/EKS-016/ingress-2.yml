@@ -22,7 +22,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  - host: dev-sheeple.avellinoconsulting.app
+  - host: client.domain.com
     http:
       paths:
       - backend:
