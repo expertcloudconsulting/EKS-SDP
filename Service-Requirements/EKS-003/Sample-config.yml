@@ -1,67 +1,96 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kibana
-  namespace: elastic-logging
   labels:
-    app: kibana
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
+    app: <SERVICE_NAME>
+  name: <SERVICE_NAME>
+  namespace: dev
 spec:
   replicas: 1
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: kibana
+      app: <SERVICE_NAME>
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   template:
     metadata:
       labels:
-        app: kibana
+        app: <SERVICE_NAME>
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: eks.amazonaws.com/nodegroup
-                operator: In
-                values:
-                - private-nodes-eks
       containers:
-      - name: kibana
-        image: docker.elastic.co/kibana/kibana:latest
-        resources:
-          limits:
-            cpu: 500m
-          requests:
-            cpu: 100m
-        env:
-         - name: ELASTICSEARCH_HOSTS
-           value: http://elasticsearch:9200
-        envFrom:
-        - secretRef:
-            name: kibana-creds
-        ports:
-        - containerPort: 5601
----
-apiVersion: v1
-data:
-  ELASTICSEARCH_USERNAME: ZWxhc3RpYw== #elastic 
-  ELASTICSEARCH_PASSWORD: Y2hhbmdlbWU= #changeme
-kind: Secret
-metadata:
-  name: kibana-creds
-  namespace: elastic-logging
-type: Opaque
+        - name: <SERVICE_NAME>
+          image: <IMAGE>
+          imagePullPolicy: Always
+          env:
+            - name: ENV
+              value: dev
+            - name: DOPPLER_TOKEN
+              value: <DOPPLER_TOKEN>
+          ports:
+            - containerPort: 9002
+            - containerPort: 9102
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: kibana
-  namespace: elastic-logging
-  labels:
-    app: kibana
+  name: <SERVICE_NAME>
+  namespace: dev
 spec:
+  type: ClusterIP
   ports:
-  - port: 5601
+    - name: http-port
+      port: 9002
+      targetPort: 9002
+    - name: grpc-port
+      port: 9102
+      targetPort: 9102
   selector:
-    app: kibana
+    app: <SERVICE_NAME>
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect","RedirectConfig":
+      { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    alb.ingress.kubernetes.io/group.name: dev-apps
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/rewrite-target: /$1
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+    kubernetes.io/ingress.class: alb
+  name: <SERVICE_NAME>
+  namespace: dev
+spec:
+  ingressClassName: alb
+  rules:
+  - host: dev.clientname.com
+    http:
+      paths:
+        - path: /api/admin
+          pathType: Prefix
+          backend:
+            service:
+              name: <SERVICE_NAME>
+              port:
+                number: 9002
