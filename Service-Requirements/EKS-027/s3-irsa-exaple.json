@@ -1,0 +1,40 @@
+#Permissions
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": "s3:ListAllMyBuckets",
+        "Resource": "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": "s3:*",
+        "Resource": [
+          "arn:aws:s3:::your-bucket-name",
+          "arn:aws:s3:::your-bucket-name/*"
+        ]
+      }
+    ]
+  }  
+#trust policy
+{
+    "Version":
+        "2012-10-17",  
+    "Statement":
+[
+        {
+            "Sid":"",      
+            "Effect": "Allow",
+            "Principal": {
+            "Federated":"arn:aws:iam::xxx:oidc-provider/oidc.eks.ap-south-1.amazonaws.com/id/xxx"
+                    },           
+            "Action": "sts:AssumeRoleWithWebIdentity", 
+            "Condition": {
+            "StringEquals": {     
+            "<redacted>sub":"system:serviceaccount:deafult:tests3"
+                }
+            }
+        }
+    ]
+}

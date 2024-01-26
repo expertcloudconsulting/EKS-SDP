@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": "arn:aws:ecr:your-region:your-account-id:repository-name"
+    }
+  ]
+}
+#trust policy
+{
+    "Version":
+        "2012-10-17",  
+    "Statement":
+[
+        {
+            "Sid":"",      
+            "Effect": "Allow",
+            "Principal": {
+            "Federated":"arn:aws:iam::xxx:oidc-provider/oidc.eks.ap-south-1.amazonaws.com/id/xxx"
+                    },           
+            "Action": "sts:AssumeRoleWithWebIdentity", 
+            "Condition": {
+            "StringEquals": {     
+            "<redacted>sub":"system:serviceaccount:deafult:testecr"
+                }
+            }
+        }
+    ]
+}
