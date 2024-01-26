@@ -1,0 +1,19 @@
+#following taint is used to reject non ML workload pods.
+key: machine_learning_workload, value: true, effect: NoSchedule
+
+#following toleration must be configured on pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ML-workload
+spec:
+  containers:
+  - name: ML-workload
+    image: image
+.
+.
+  tolerations:
+  - key: machine_learning_workload
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
