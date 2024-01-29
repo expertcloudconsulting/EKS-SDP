@@ -1,0 +1,80 @@
+#ASG example ( managed node grouo)
+provider "aws" {
+  region = "us-west-2"  # Set your desired AWS region
+}
+
+module "eks" {
+  source = "terraform-aws-modules/eks/aws"
+
+  cluster_name = "my-cluster"
+
+  subnets = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]  # Replace with your subnet IDs
+
+  node_groups = {
+    managed_nodes = {
+      desired_capacity = 2
+      max_capacity     = 3
+      min_capacity     = 1
+
+      key_name = "your-key-pair-name"
+      instance_type = "t3.medium"  # Adjust instance type as needed
+    }
+  }
+}
+
+#fargate example
+provider "aws" {
+  region = "us-west-2"  # Set your desired AWS region
+}
+
+module "eks" {
+  source = "terraform-aws-modules/eks/aws"
+
+  cluster_name = "my-fargate-cluster"
+
+  fargate_profiles = {
+    default = {
+      subnets = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]  # Replace with your subnet IDs
+    }
+  }
+}
+
+# karpenter example
+---
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  ttlSecondsAfterEmpty: 60 # scale down nodes after 60 seconds without workloads (excluding daemons)
+  ttlSecondsUntilExpired: 604800 # expire nodes after 7 days (in seconds) = 7 * 60 * 60 * 24
+  limits:
+    resources:
+      cpu: 100 # limit to 100 CPU cores
+  requirements:
+    # skew defines the difference allowed between no. of pods between nodes, the nodes are differentiated by the zone key.
+    - key: "topology.kubernetes.io/zone"
+      operator: In
+      values: ["ap-south-1a", "ap-south-1b"]
+    # Include general purpose instance families
+    - key: karpenter.k8s.aws/instance-family
+      operator: In
+      values: [t2, c5, m5]
+    # Exclude some instance sizes
+    - key: karpenter.k8s.aws/instance-size
+      operator: NotIn
+      values: [nano, micro, small ]
+  providerRef:
+    name: my-provider
+---
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: my-provider
+spec:
+  subnetSelector:
+    kubernetes.io/cluster/basik-eks-cluster: owned
+    Name: "private-ap-south-1*"
+  securityGroupSelector:
+    kubernetes.io/cluster/basik-eks-cluster: owned
+    Name: "eks-cluster-sg-basik-eks-cluster-1343022499"

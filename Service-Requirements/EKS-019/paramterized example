@@ -1,0 +1,78 @@
+# the main.tf that would deploy the resoucre
+provider "aws" {
+  region = var.region
+}
+
+module "eks" {
+  source          = "terraform-aws-modules/eks/aws"
+  cluster_name    = var.cluster_name
+  subnets         = var.subnet_ids
+  vpc_id          = var.vpc_id
+  cluster_version = var.eks_version
+
+  node_groups = {
+    eks_nodes = {
+      desired_capacity = var.node_group_desired_capacity
+      max_capacity     = var.node_group_max_size
+      min_capacity     = var.node_group_min_size
+      instance_type    = var.node_group_instance_type
+    }
+  }
+
+  # Add more configuration based on your specific needs
+}
+#Variables that can be parameterized at the pipeline 
+# variables.tf
+
+variable "cluster_name" {
+  description = "The name for the EKS cluster"
+  type        = string
+}
+
+variable "region" {
+  description = "The AWS region in which to create the EKS cluster"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "The ID of the VPC in which to create the EKS cluster"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "A list of subnet IDs for the EKS cluster"
+  type        = list(string)
+}
+
+variable "node_group_instance_type" {
+  description = "The instance type for the EKS node group"
+  type        = string
+}
+
+variable "node_group_desired_capacity" {
+  description = "The desired capacity for the EKS node group"
+  type        = number
+}
+
+variable "node_group_min_size" {
+  description = "The minimum size for the EKS node group"
+  type        = number
+}
+
+variable "node_group_max_size" {
+  description = "The maximum size for the EKS node group"
+  type        = number
+}
+
+variable "cluster_security_group_ids" {
+  description = "A list of security group IDs to associate with the EKS cluster"
+  type        = list(string)
+}
+
+variable "node_group_security_group_ids" {
+  description = "A list of security group IDs to associate with the EKS node group"
+  type        = list(string)
+}
+
+# Add more variables as needed based on your specific requirements
+
