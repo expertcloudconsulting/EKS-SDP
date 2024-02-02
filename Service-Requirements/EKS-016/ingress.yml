@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-nginx@kubernetescrd # strip path prefix middleware
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-nginx@kubernetescrd
   name: microservice-1
   namespace: dev
 spec:
