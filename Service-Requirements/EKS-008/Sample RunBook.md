@@ -1,4 +1,17 @@
-Testing microservices, Custom Resource Definitions (CRDs), Role-Based Access Control (RBAC) roles, and Helm charts on an upgraded Amazon EKS cluster involves ensuring that your applications and configurations work seamlessly with the new Kubernetes version. Below is a step-by-step runbook to guide you through this process:
+Before proceeding to the EKS upgrades using any of the methdos such as in-place upgrade or blue/green consider gaining better understanding of below - 
+
+Understand Deprecation Policies — Gain a deep understanding of how the Kubernetes deprecation policy works - https://kubernetes.io/docs/reference/using-api/deprecation-policy/. Be aware of any upcoming changes that may affect your existing applications. Newer versions of Kubernetes often phase out certain APIs and features, potentially causing issues for running applications.
+
+Review Kubernetes Change Log (https://github.com/kubernetes/kubernetes/tree/master/CHANGELOG) — Thoroughly review the Kubernetes change log alongside Amazon EKS Kubernetes versions to understand any possible impact to your cluster, such as breaking changes that may affect your workloads.
+
+Assess Cluster Add-Ons Compatibility (https://docs.aws.amazon.com/eks/latest/userguide/managing-add-ons.html#updating-an-add-on) — Amazon EKS doesn't automatically update an add-on when new versions are released or after you update your cluster to a new Kubernetes minor version. Review Updating an add-on to understand the compatibility of any existing cluster add-ons with the cluster version you intend to upgrade to.
+
+Enable Control Plane Logging (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) — Enable control plane logging to capture logs, errors, or issues that can arise during the upgrade process. Consider reviewing these logs for any anomalies. Test respective cluster and/or integrate automated tests into  continuous integration workflow to assess version compatibility with your applications, controllers, and custom integrations.
+
+Utilize kubectl Convert Plugin — Leverage the kubectl convert plugin (https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin) to facilitate the conversion of Kubernetes manifest files between different API versions. This can help ensure that your configurations remain compatible with the new Kubernetes version.
+
+
+Additionally Testing microservices, Custom Resource Definitions (CRDs), Role-Based Access Control (RBAC) roles, and Helm charts on an upgraded Amazon EKS cluster involves ensuring that your applications and configurations work seamlessly with the new Kubernetes version. Below is a step-by-step runbook to guide you through this process:
 
 1. Preparation:
 1.1. Backup Configurations:
