@@ -3,20 +3,20 @@ kind: Ingress
 metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-nginx@kubernetescrd # strip path prefix middleware
-  name: whoami
-  namespace: traefik
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-nginx@kubernetescrd
+  name: microservice-1
+  namespace: dev
 spec:
-  ingressClassName: traefik
+  ingressClassName: microservice-1
   rules:
   - http:
       paths:
       - backend:
           service:
-            name: whoami
+            name: microservice-1
             port:
               number: 80
-        path: /whoami
+        path: /api/v1
         pathType: Prefix
 status:
   loadBalancer: {}
